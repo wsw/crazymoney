@@ -1,0 +1,657 @@
+﻿(function($) {
+
+    var Game = function(data) {
+        this.ajax = data.ajax;
+        this.config = data.config;
+        this.curPageId = "start";
+
+        this.userinfo = {};
+    }
+
+    var windowHeight = $(window).height(),
+        windowWidth = $(window).width(),
+        $gameResultLayer = $("#resultPage"),
+        $rankList = $("#rankList"),
+        $rankMy = $("#rankMy"),
+        $myPage = $("#myPage"),
+        $gameStart = $("#gameStart"),
+        gameIsOver = true,
+        gameFlag = false,
+        gameDataLoaded = false,
+        score = 0, remain = 2, money=100, time = 30,
+        curScore = 0, isUse = false;
+    var index = 0;
+
+    window.Game = function(data){     //挂到window对象下
+
+        var DocumentHeight = document.documentElement.clientHeight;
+        var DocumentWidth = document.documentElement.clientWidth;
+        var floatMoneyCount = 0;
+        var imgDataType = 0;
+        var moneyTypeList = [0,0,0,0,1,1,1,2,2,3];
+        var moneyValue = [10,10,10,10,20,20,20,50,50,100];
+        var flySprite, moneySprite, floatSprite;
+        var txtSprite, timeSprite;
+        var timeText, numText;
+        var imglist = {};
+        var downpoint = {x: 0, y: 0};
+        var sound;
+        var imgData = new Array(
+            {name:"d0",path:"/App_Content/Game/CrazyMoneys/css/image/d0.png"},
+            {name:"d1",path:"/App_Content/Game/CrazyMoneys/css/image/d1.png"},
+            {name:"d2",path:"/App_Content/Game/CrazyMoneys/css/image/d2.png"},
+            {name:"d3",path:"/App_Content/Game/CrazyMoneys/css/image/d3.png"},
+            {name:"m0",path:"/App_Content/Game/CrazyMoneys/css/image/m0.png"},
+            {name:"m1",path:"/App_Content/Game/CrazyMoneys/css/image/m1.png"},
+            {name:"m2",path:"/App_Content/Game/CrazyMoneys/css/image/m2.png"},
+            {name:"m3",path:"/App_Content/Game/CrazyMoneys/css/image/m3.png"},
+            {name:"mb0",path:"/App_Content/Game/CrazyMoneys/css/image/mb0.png"},
+            {name:"mb1",path:"/App_Content/Game/CrazyMoneys/css/image/mb1.png"},
+            {name:"mb2",path:"/App_Content/Game/CrazyMoneys/css/image/mb2.png"},
+            {name:"mb3",path:"/App_Content/Game/CrazyMoneys/css/image/mb3.png"},
+            {name:"time",path:"/App_Content/Game/CrazyMoneys/css/image/tmicon.png"},
+            {name:"start",path:"/App_Content/Game/CrazyMoneys/css/image/starttip.png"}
+        );
+
+        // var imgData = new Array(
+        //     {name:"d0",path:"./css/image/d0.png"},
+        //     {name:"d1",path:"./css/image/d1.png"},
+        //     {name:"d2",path:"./css/image/d2.png"},
+        //     {name:"d3",path:"./css/image/d3.png"},
+        //     {name:"m0",path:"./css/image/m0.png"},
+        //     {name:"m1",path:"./css/image/m1.png"},
+        //     {name:"m2",path:"./css/image/m2.png"},
+        //     {name:"m3",path:"./css/image/m3.png"},
+        //     {name:"mb0",path:"./css/image/mb0.png"},
+        //     {name:"mb1",path:"./css/image/mb1.png"},
+        //     {name:"mb2",path:"./css/image/mb2.png"},
+        //     {name:"mb3",path:"./css/image/mb3.png"},
+        //     {name:"time",path:"./css/image/tmicon.png"},
+        //     {name:"start",path:"./css/image/starttip.png"}
+        // );
+
+        function main(){    
+            // LGlobal.preventDefault = false;
+            LGlobal.stageScale = LStageScaleMode.SHOW_ALL;
+            LSystem.screen(LStage.FULL_SCREEN);
+            LGlobal.backgroundColor = "#488451"
+            //游戏主层初始化 
+
+            sound = new LSound();
+            sound.load("/App_Content/Game/CrazyMoneys/css/audio/count.mp3");
+
+            LLoadManage.load(
+                imgData,
+                function(progress){
+
+                },gameInit
+            );
+        }
+
+        //读取完所有图片，进行游戏标题画面的初始化工作
+        function gameInit(result){
+            //取得图片读取结果
+            imglist = result;
+    
+
+            $("#load").animate({top: '-100%',opacity: 0}, 500, 'linear', function (){
+                 $(this).hide();
+            });
+
+            floatSprite = new FloatSprite();
+            floatSprite.addEventListener(LEvent.ENTER_FRAME, function(event) {
+                event.currentTarget.run();
+            });
+            addChild(floatSprite);
+
+            moneySprite = new MoneySprite();
+            moneySprite.addEventListener(LEvent.ENTER_FRAME, function (event) {
+                event.currentTarget.changImg(imglist["mb"+moneyTypeList[index]]);
+            });
+            addChild(moneySprite);
+
+            flySprite = new LSprite();
+            addChild(flySprite);
+
+            textShow();
+
+            var eventSprite = new LSprite();
+            eventSprite.addShape(LShape.RECT, [0,0,LGlobal.canvasObj.width, LGlobal.canvasObj.height]);
+            addChild(eventSprite)
+            eventSprite.addEventListener(LMouseEvent.MOUSE_DOWN, mouseDown);
+            eventSprite.addEventListener(LMouseEvent.MOUSE_MOVE, mouseMove);
+            eventSprite.addEventListener(LMouseEvent.MOUSE_UP, mouseUp);
+        }
+
+        function onPlayAudio() {
+            // // console.log(sound)
+            // if (sound.playing) {
+            //     //sound.play(0.2);
+            // } else {
+            //     sound.play();
+            // }
+            sound.play()
+            // sound.play(0.4,10);
+        }
+
+        function FloatSprite() {
+            base(this, LSprite, []);
+
+            var self = this;
+            self.setChilds(imglist["d"+moneyTypeList[index]]);
+        }
+
+        FloatSprite.prototype.run = function() {
+            var self = this;
+            for (var i = 0; i < self.childList.length; i++) {
+                if (self.childList[i].y > DocumentHeight) {
+                    self.childList[i].die();
+                    self.removeChild(self.childList[i]);
+                    floatMoneyCount++;
+                }
+            }
+            if (floatMoneyCount >= 4) {
+                floatMoneyCount = 0;
+                self.setChilds(imglist["d"+moneyTypeList[index]]);
+            }
+        }
+
+        FloatSprite.prototype.changImg = function(img) {
+            var self = this;
+            for (var i = 0; i < self.childList.length; i++) {
+                self.childList[i].changImg(img);
+            }
+        }
+
+        FloatSprite.prototype.setChilds = function(img) {
+            var self = this;
+            for (var i = 0; i < 4; i++) {
+                (function (i) {
+                    var floatLayer = new FloatMoneyLayer(img);
+                    self.addChild(floatLayer);
+                    floatLayer.addEventListener(LEvent.ENTER_FRAME, function(a) {
+                        floatLayer.run();
+                    });
+                })(i)
+            }
+        }
+
+        function FloatMoneyLayer(img) {
+            base(this, LSprite, []);
+
+            var self = this;
+            self.bitmap = new LBitmap(new LBitmapData(img));
+            self.addChild(self.bitmap);
+            self.scaleX = 0.5;
+            self.scaleY = 0.5;
+            self.rotate = getRandom(360);
+            self.x = getRandom(DocumentWidth);
+            self.y = getRandom(50)-50;
+        }
+
+        FloatMoneyLayer.prototype.run = function () {
+            var self = this;
+            self.x += 0;
+            self.y += 22;
+            self.rotate += 10;
+        }
+        FloatMoneyLayer.prototype.changImg = function(img) {
+            var self = this;
+            self.bitmap.die();
+            self.removeChild(self.bitmap);
+            self.bitmap = new LBitmap(new LBitmapData(img));
+            self.addChild(self.bitmap);
+        }
+
+        function MoneySprite() {
+            base(this, LSprite, []);
+
+            var self = this;
+
+            self.money = new LBitmap(new LBitmapData(imglist["mb"+imgDataType]));
+            self.addChild(self.money);
+            self.scaleX = 0.5;
+            self.scaleY = 0.5;
+            self.x = (DocumentWidth - self.getWidth())/2;
+            self.y = DocumentHeight - self.getHeight();
+
+            // self.addEventListener(LMouseEvent.MOUSE_DOWN, mouseDown);
+            // self.addEventListener(LMouseEvent.MOUSE_MOVE, function(event) {
+            //     console.log(2);
+            // });
+            // self.addEventListener(LMouseEvent.MOUSE_UP, mouseUp);
+        }
+        MoneySprite.prototype.changImg = function (img) {
+            var self = this;
+            self.money.die();
+            self.removeChild(self.money);
+            self.money = new LBitmap(new LBitmapData(img));
+            self.addChild(self.money);
+        }
+
+        function mouseDown (event) {
+            downpoint.x = event.offsetX;
+            downpoint.y = event.offsetY;
+            gameFlag = true;
+
+            if (!gameDataLoaded) {
+                return ;
+            }
+
+            if (remain <= 0) {
+                $("body").popup("亲~您已经没有游戏机会咯，您不能再玩啦~");
+                return ;
+            }
+
+            if (isUse) { 
+                $("body").popup("亲~您的券已经使用啦，您不能再玩啦~");
+                return ;
+            }
+
+            if (gameIsOver) {
+                gameIsOver = false; 
+                $gameStart.hide();
+                game.timeHandle();
+            }
+
+            if (!gameIsOver) {
+                onPlayAudio();
+            }
+        }
+
+        function mouseMove (event) {
+            
+        }
+
+        function mouseUp (event) {
+            if (gameFlag) {
+                gameFlag = false;
+            } else {
+                return ;
+            }
+
+            if (gameIsOver) {
+                return;
+            }
+
+            if (downpoint.y - event.offsetY > 1) {
+                var sprite = new FlySprite();
+                flySprite.addChild(sprite);
+                sprite.addEventListener(LEvent.ENTER_FRAME, function(event) {
+                    event.currentTarget.run("up");
+                });
+                score += moneyValue[index];
+            } else if (downpoint.y - event.offsetY < -1) {
+                var sprite = new FlySprite();
+                flySprite.addChild(sprite);
+                sprite.addEventListener(LEvent.ENTER_FRAME, function(event) {
+                    event.currentTarget.run("down");
+                });
+            }
+        }
+
+
+        function FlySprite() {
+            base(this, LSprite, []);
+
+            var self = this;
+            self.scaleX = 0.5;
+            self.scaleY = 0.5;
+
+            var fly = new LBitmap(new LBitmapData(imglist["m"+moneyTypeList[index]]));
+            self.addChild(fly);
+            self.x = (DocumentWidth - self.getWidth())/2;
+            self.y = DocumentHeight - self.getHeight();
+        }
+
+        FlySprite.prototype.run = function (flag) {
+            
+            var self = this;
+            if (flag == "down") {
+                self.y += 40;
+            } else if (flag == "up") {
+                self.y -= 40;
+            }
+            
+            if (self.y < -self.getHeight() || self.y > DocumentHeight+self.getHeight()) {
+                self.die();
+                flySprite.removeChild(self);
+                index++;
+                if (index >= moneyTypeList.length) {
+                    index = 0;
+                }
+                floatSprite.changImg(imglist["d"+moneyTypeList[index]]);
+            }
+        }
+
+        function textShow() {
+            txtSprite = new LSprite();
+            addChild(txtSprite);
+
+            var txtField = new LTextField();
+            txtSprite.addChild(txtField);
+            txtField.text = "￥0";
+            txtField.size = 20;
+            txtField.color = "#ffff00";
+            txtField.textAlign = "center";
+            txtField.textBaseline = "middle";
+
+            txtSprite.graphics.drawRect(1, "#1f6d43", [0, 0, parseInt(DocumentWidth/3), 30], true, "#2b8052");
+            txtSprite.x = (DocumentWidth-txtSprite.getWidth())/2;
+            txtSprite.y = 20;
+
+            txtField.x = txtSprite.getWidth()/2;
+            txtField.y = txtSprite.getHeight()/2;
+            
+            txtSprite.addEventListener(LEvent.ENTER_FRAME, function(event) {
+                event.currentTarget.childList[0].text = "￥"+ score;
+            });
+
+            timeSprite = new LSprite();
+            addChild(timeSprite);
+            var timeBit = new LBitmap(new LBitmapData(imglist['time']));
+            timeBit.scaleY = 0.5;
+            timeBit.scaleX = 0.5;
+            timeBit.x = 10;
+            timeBit.y = 4;
+            timeSprite.addChild(timeBit);
+            timeSprite.graphics.drawRect(1, "#1f6d43", [0, 0, parseInt(DocumentWidth/4), 30], true, "#2b8052");
+            timeSprite.x = (DocumentWidth-timeSprite.getWidth()-100)/2;
+            timeSprite.y = 70;
+
+            timeText = new LTextField();
+            timeText.text = '30"';
+            timeText.size = 18;
+            timeText.color = "white";
+            timeText.textAlign = "center";
+            timeText.textBaseline = "middle";
+            timeSprite.addChild(timeText);
+            timeText.x = timeSprite.getWidth()/2 + 12;
+            timeText.y = timeSprite.getHeight()/2;
+
+            numText = new LTextField();
+            numText.text = 'X 6 次';
+            numText.size = 20;
+            numText.color = "white";
+            numText.x = 100;
+            timeSprite.addChild(numText);
+            timeSprite.addEventListener(LEvent.ENTER_FRAME, function() {
+                timeText.text = time + '"';
+                numText.text = 'X ' + remain + '次'; 
+            })
+        }
+
+        function getRandom(a) {
+            return parseInt(Math.random()*a);
+        }
+
+        var game = new Game(data); //创建对象
+
+        game.main = main;
+        game.init();
+    };
+
+
+    Game.prototype = {
+        init: function() {
+            this.gameOutcome();
+            this.menu();
+            this.bodyEvent();
+            this.gameReady();
+            this.gameStart();
+
+            time = this.config.countSecond;
+        },
+        menu: function() {
+            var _this = this;
+            $("footer").bind('touchstart', function(e) {
+                var action = e.target.getAttribute('data-action');
+                switch (action){
+                    case 'guide':
+                    case 'rank':
+                    case 'start':
+                    case 'my':
+                        _this.changePage(action);
+                        break;
+                    case 'share':
+                        $("#sharePage").show();
+                        break;
+                }
+                return false;
+            });
+        },
+        bodyEvent: function() {
+            var _this = this;
+            $("body").bind("touchstart", function(e) {
+                if ($(e.target).hasClass('car-popup-cancel')) {
+                    $(".car-popup-cancel").click();
+                }
+                if (e.target.tagName == "INPUT") {
+                    $(e.target).focus();
+                }
+                var action = e.target.getAttribute('data-action');
+                if (action == "restart") {
+                    _this.changePage('start');
+                }
+                if (action == "get") {
+                    _this.gameSignup();
+                }
+                if (action == "use") {
+                    _this.gameUse($(e.target).parent().find('input'));
+                }
+                if (action == "share") {
+                    $("#sharePage").show();
+                }
+            });
+        },
+        changePage: function(showid) {
+            $("#sharePage").hide();
+            if (showid === this.curPageId){
+                return;
+            }
+            if (showid === "rank") {
+                rankHeight();
+            }
+            $("#" + this.curPageId + "Page").hide();
+            $("#" + showid + "Page").fadeIn();
+            this.curPageId = showid;
+        },
+        gameReady: function() {
+            init(40,"canvas",windowWidth,windowHeight-10,this.main,LEvent.INIT);   //游戏初始化
+        },
+        gameStart: function() {
+            score = 0;
+            index = 0;
+            time = this.config.countSecond;
+            gameDataLoaded = true;
+            $gameStart.show();
+        },
+        gameOver: function() {
+            var _this = this;
+
+            gameIsOver = true;
+            gameDataLoaded = false;
+
+            if (_this.config.maxPoint > 0 && score >= _this.config.maxPoint) {
+                score = _this.config.maxPoint;
+            }
+
+            curScore = score;
+
+            _this.gamePlay(function(result) {
+                remain = result.Status.TodayRemainCount;
+                if (!_this.userinfo || score - _this.userinfo.Point > 0) {   //用户还没存在或分数高于当前分数
+                    $gameResultLayer.find("#gameResult").text(score);
+                    var beatRatio = Math.floor(100*result.BeatCount/result.TotalCount) + "%";
+                    if (_this.userinfo) {
+                        $gameResultLayer.find("#currentRank").text("当前排名第"+result.MyInfo.No+",击败了全国"+beatRatio+"的对手!");
+                    } else {
+                        $gameResultLayer.find("#currentRank").text("击败了全国"+beatRatio+"的对手!");
+                    }
+                    $gameResultLayer.find('#resultContainer_1').show();
+                    $gameResultLayer.find('#resultContainer_2').hide();
+                }else {
+                    $gameResultLayer.find("#currentRank").text("当前排名第"+result.MyInfo.No+",低于你当前最高记录！");
+                    $gameResultLayer.find("#gameResult").text(score);
+                    $gameResultLayer.find('#resultContainer_1').hide();
+                    $gameResultLayer.find('#resultContainer_2').show();
+                }
+                _this.changePage('result');
+                _this.gameStart();
+            });
+        },
+        timeHandle: function() {
+            var _this = this;
+            var itv = setInterval(function() {         
+                time--;
+                if (time <= 0) {
+                    clearInterval(itv);
+                    _this.gameOver();
+                }
+            }, 1000)
+        },
+        templateRank: function(ranklist, myinfo, total) {
+            $rankList.html('');
+            var html = "";
+
+            $.each(ranklist, function(index, value) {
+                html += '<li><span class="list-1"><i class="rank">'+value.No+'</i></span>' + 
+                    '<span class="list-2">'+value.Name+'</span><span class="list-3">'+value.MobilePhone+'</span> ' + 
+                    '<span class="list-4">'+value.Point+'</span></li>';
+            });
+            $rankList.append(html);
+
+            if (myinfo) {
+                $rankMy.html('<li><span class="list-1"><i class="rank">'+myinfo.No+'</i></span>'+
+                    '<span class="list-2">'+myinfo.Name+'</span><span class="list-3">'+myinfo.MobilePhone+'</span>' + 
+                    '<span class="list-4">'+myinfo.Point+'</span></li>').show();
+            } else {
+                $rankMy.hide();
+            }
+
+            $("#rankPage .title").text("当前"+total+"人在玩");
+
+        },
+        myinfoPage: function(myinfo) {
+            if (myinfo) {
+                $myPage.find('.title').show();
+                $myPage.find('.point').text(myinfo.Point + '元');
+                $myPage.find('.name').text(myinfo.Name);
+                $myPage.find('.phone').text(myinfo.MobilePhone);
+                if (myinfo.IsUse) {
+                    $myPage.find('.content-use').hide();
+                    $myPage.find('.content-used').show();
+                } else {
+                    $myPage.find('.content-use').show();
+                    $myPage.find('.content-used').hide();
+                }
+                $myPage.find("#myContainer_1").show();
+                $myPage.find("#myContainer_2").hide();
+            } else {
+                $myPage.find('.title').hide();
+                $myPage.find('.point').text('亲.你还没开始玩~');
+                $myPage.find("#myContainer_2").show();
+                $myPage.find("#myContainer_1").hide();
+            }
+        },
+        gameOutcome: function() {
+            var _this = this;
+            _this.ajax.outcome(function(result) {
+                console.log(result);
+
+                remain = result.Status.TodayRemainCount;
+                _this.userinfo = result.MyInfo;
+                if (_this.userinfo) {
+                    isUse = _this.userinfo.IsUse;
+                }
+                _this.templateRank(result.Rank, result.MyInfo, result.TotalCount);
+                _this.myinfoPage(result.MyInfo);
+            });
+        },
+        gameSignup: function() {
+            var _this = this;
+            _this.ajax.signup(curScore,function(result) {
+                console.log(result);
+
+                _this.userinfo = result.MyInfo;
+                _this.templateRank(result.Rank, _this.userinfo, result.TotalCount);
+                _this.myinfoPage(result.MyInfo);
+
+                _this.changePage('my');
+            });
+        },
+        gamePlay: function(callback) {
+            var _this = this;
+            _this.ajax.play(score, function(result) {
+                console.log(result);
+
+                _this.templateRank(result.Rank, _this.userinfo, result.TotalCount);
+                remain = result.Status.TodayRemainCount;
+
+                callback && callback(result);
+            });
+        },
+        gameUse: function($em) {
+            var _this = this;
+            if (_this.config.code == $em.val()) {
+                _this.ajax.use(function() {     //id. 
+                    $em.parent().text('已兑奖').removeClass('content-use').addClass('content-used');
+                    isUse = true;
+                });
+            } else {
+                $("body").popup("亲~此处由经销商输入哦~请正确输入~");
+            }
+        }
+    }
+})(Zepto);
+
+
+function noBarsOnTouchScreen(arg){
+    var elem, tx, ty;
+    if ('ontouchstart' in document.documentElement){
+        if (elem = document.getElementById(arg)){
+            elem.style.overflow = 'hidden';
+            elem.ontouchstart = ts;
+            elem.ontouchmove = tm;
+        }
+    }
+    function ts(e){
+        var tch;
+        if (e.touches.length == 1){
+            e.stopPropagation();
+            tch = e.touches[0];
+            tx = tch.pageX;
+            ty = tch.pageY;
+        }
+    }
+    function tm(e){
+        var tch;
+        if (e.touches.length == 1) {
+            e.preventDefault();
+            e.stopPropagation();
+            tch = e.touches[0];
+            this.scrollTop += ty - tch.pageY;
+            ty = tch.pageY;
+        }
+    }
+}
+
+//排行榜高度
+function rankHeight() {
+    var windowHei = $(window).height();
+
+    var bottom = $("#footer").height();
+    var top = $("#rankList").offset().top;
+    var my = $("#rankMy").height() + 15;
+
+    $("#rankList").height(windowHei- bottom - top - my);
+}
+//2.3系统版本滚动事件
+var ua = navigator.userAgent;
+if (/Android (\d+\.\d+)/.test(ua)){
+    var version = parseFloat(RegExp.$1);
+    if (version > 2.3) { } else {
+        //andriod 2.3以下
+        noBarsOnTouchScreen('rankListCon');
+    }
+}

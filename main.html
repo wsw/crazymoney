@@ -1,0 +1,204 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+	<meta content="telephone=no" name="format-detection">
+	<meta name="apple-touch-fullscreen" content="no"/>
+	<meta name="apple-mobile-web-app-capable" content="yes"/>
+	<title>钱</title>
+    <link href="css/main.css" rel="stylesheet" />
+    <link href="css/loading.css" rel="stylesheet" />
+</head>
+<body>
+	<div class="main-container">
+        <div class="hide" id="guidePage">
+            <h2>游戏规则</h2>
+            <p class="page-content">xxxxxxxxxxxxxxxxxxxx
+                xxxxxxxxxxxxx
+                xxxxxxxxxxxxx
+                xxxxxxxxxxxxx
+            </p>
+        </div>
+        <div class="hide" id="rankPage">
+            <h2>排行榜</h2>
+            <div class="page-content">
+                <p class="title">当前30人在玩</p>
+                <ul class="rank-list">
+                    <li class="list-head">
+                        <span class="list-1">排名</span>
+                        <span class="list-2">昵称 </span>
+                        <span class="list-3">手机</span> 
+                        <span class="list-4">分数</span> 
+                    </li>
+                </ul>
+                <ul id="rankList" class="rank-list">
+                    <li>
+                        <span class="list-1"><i class="rank">1</i></span>
+                        <span class="list-2">比赛里的小黄人</span>
+                        <span class="list-3">15005929526</span> 
+                        <span class="list-4">400</span> 
+                    </li>
+                </ul>
+                <ul id="rankMy" class="rank-my-info rank-list">
+                    <li>
+                        <span class="list-1"><i class="rank">1</i></span>
+                        <span class="list-2">比赛里的小黄人</span>
+                        <span class="list-3">15005929526</span> 
+                        <span class="list-4">400</span> 
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="my-page hide" id="myPage">
+            <h2>我的</h2>
+            <div class="page-content">
+                <p class="title">恭喜您获得了：</p>
+                <p class="point">3000分</p>
+                <div id="myContainer_1" class="my-info">
+                    <p>姓&nbsp;&nbsp;&nbsp;名：<span class="name">张三</span></p>
+                    <p>手机号：<span class="phone">15659976952</span></p>
+                    <div class="my-btn">
+                        <a href="###" data-action="share">喊上小伙伴一起玩</a>
+                    </div>
+                    <div class="content-info">
+                        <h3>使用说明：</h3>
+                        <p>您抢到的礼品:</p>
+                        <h3>有效日期：</h3>
+                        <p>20142222fffff</p>
+                    </div>
+                    <div class="content-use">
+                        <input type="text" placeholder="输入兑换码">
+                        <input type="button" value="兑奖" data-action="use">
+                    </div>
+                    <div class="content-used">
+                        已兑奖
+                    </div>
+                </div>
+                <div id="myContainer_2" class="">
+                    <div class="my-btn">
+                        <a href="###" data-action="restart">马上开始游戏</a>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        <div class="active-page" id="startPage" style="height:100%; width:100%;">
+            <div id="canvas">loading...</div>
+            <div id="gameStart" class="active-start"></div>
+        </div>
+        <div id="resultPage" class="result-page hide">
+            <h2>恭喜您</h2>
+            <div class="page-content">
+                <p class="fs_big">总共戳得<i id="gameResult">3000</i>分</p>
+                <p class="fs_small" id="currentRank"></p>
+                <div class="submit-content" id="resultContainer_1">
+                    <ul>
+                        <li>
+                            <div class="ipt-wrap">
+                                <span class="iws">您的姓名：</span>
+                                <input type="text" id="userName">
+                            </div>
+                        </li>
+                        <li>
+                            <div class="ipt-wrap">
+                                <span class="iws">您的电话：</span>
+                                <input type="tel" id="userPhone">
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="submit-btn">
+                         <a href="javascrip:;" data-action="get">马上领券</a>
+                    </div>
+                </div>
+                <div class="submit-content" id="resultContainer_2">
+                    <div class="submit-btn">
+                         <a href="javascrip:;" data-action="restart">再玩一次</a>
+                    </div>
+                </div>
+            </div>      
+        </div>
+    </div>
+
+    <footer class="foot" id="footer">
+        <span>
+            <a href="###" data-action="guide">规则</a>
+            <a href="###" data-action="rank">排行榜</a>
+            <a href="###" data-action="start" class="start"></a>
+            <a href="###" data-action="my">我的</a>
+            <a href="###" data-action="share">分享</a>
+        </span>
+    </footer>
+
+    
+    <div id="sharePage" class="hide" onTouchStart="$(this).hide()">
+        <div class="img"></div>
+    </div>
+    <div id="mask" class="hide"></div>
+
+    <div id="load" class="load">
+        <div class="load5">
+            <div class="dot1"></div>
+            <div class="dot2"></div>
+        </div>
+    </div>
+    
+    <!-- <script type="text/javascript" src="js/zepto.js"></script> -->
+    <script type="text/javascript" src="js/zepto.js"></script>
+    <script type="text/javascript" src="js/lufylegend-1.9.1.min.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+    <script type="text/javascript">
+
+    var ajax = {
+        play: function(number, callback) {
+
+            var result = {"Status":{"TodayRemainCount":16},"MyInfo":{"ClientId":"f816ce91-4f75-44fd-97df-53ab493fd338","CustomerId":28358,"Nickname":"weishuwen","HeadImgUrl":"http://wx.qlogo.cn/mmopen/PiajxSqBRaEJtTyP3wkwnr8qicxg1yq3POlAeeYF1uIDnoJnicJiaYNlKgZQhYooRVzlibACKwQcnZzyjQep42c0Q9Q/0","Name":"233","MobilePhone":"13245***091","No":4,"Point":120,"IsUse":true},"Rank":[{"ClientId":"fe9f9c31-06d0-4968-a513-a163d70c5a8b","CustomerId":22,"Nickname":"a 潇洒小乖 ","HeadImgUrl":"http://wx.qlogo.cn/mmopen/Q3auHgzwzM4nCiamwtwHB4rYMoHcqU5kBfiaIDIcYvj5CicthIqpatKe9hiaibw0JEkHWIPztkYBicHLum03wQCakj9A/0","Name":"tttt","MobilePhone":"18565***887","No":1,"Point":120,"IsUse":false},{"ClientId":"f816ce91-4f75-44fd-97df-53ab493fd338","CustomerId":28358,"Nickname":"weishuwen","HeadImgUrl":"http://wx.qlogo.cn/mmopen/PiajxSqBRaEJtTyP3wkwnr8qicxg1yq3POlAeeYF1uIDnoJnicJiaYNlKgZQhYooRVzlibACKwQcnZzyjQep42c0Q9Q/0","Name":"233","MobilePhone":"13245***091","No":2,"Point":120,"IsUse":true}],"TotalCount":2,"BeatCount":0}
+            
+            callback && callback(result);
+        },
+        outcome: function(callback) {
+
+            var result = {
+                Status: { TotalRemainCount: 1, TodayRemainCount: 2},
+                Rank: [{No: 1, Name: 'wsw', MobilePhone: '15659973698', Point: 100},
+                {No: 2, Name: 'wsw', MobilePhone: '15659973698', Point: 100}],
+                MyInfo: {}
+            };
+            // var result = {
+            //     Status: { TotalRemainCount: 1, TodayRemainCount: 2},
+            //     Rank: [{No: 1, Name: 'wsw', MobilePhone: '15659973698', Point: 100},
+            //     {No: 2, Name: 'wsw', MobilePhone: '15659973698', Point: 100}],
+            //     MyInfo: {No: 2, Name: 'wsw', MobilePhone: '15659973698', Point: 1, IsUse: false}
+            // }
+
+            var result = {"Status":{"TodayRemainCount":16},"MyInfo":{"ClientId":"f816ce91-4f75-44fd-97df-53ab493fd338","CustomerId":28358,"Nickname":"weishuwen","HeadImgUrl":"http://wx.qlogo.cn/mmopen/PiajxSqBRaEJtTyP3wkwnr8qicxg1yq3POlAeeYF1uIDnoJnicJiaYNlKgZQhYooRVzlibACKwQcnZzyjQep42c0Q9Q/0","Name":"233","MobilePhone":"13245***091","No":4,"Point":120,"IsUse":false},"Rank":[{"ClientId":"fe9f9c31-06d0-4968-a513-a163d70c5a8b","CustomerId":22,"Nickname":"a 潇洒小乖 ","HeadImgUrl":"http://wx.qlogo.cn/mmopen/Q3auHgzwzM4nCiamwtwHB4rYMoHcqU5kBfiaIDIcYvj5CicthIqpatKe9hiaibw0JEkHWIPztkYBicHLum03wQCakj9A/0","Name":"tttt","MobilePhone":"18565***887","No":1,"Point":120,"IsUse":false},{"ClientId":"f816ce91-4f75-44fd-97df-53ab493fd338","CustomerId":28358,"Nickname":"weishuwen","HeadImgUrl":"http://wx.qlogo.cn/mmopen/PiajxSqBRaEJtTyP3wkwnr8qicxg1yq3POlAeeYF1uIDnoJnicJiaYNlKgZQhYooRVzlibACKwQcnZzyjQep42c0Q9Q/0","Name":"233","MobilePhone":"13245***091","No":2,"Point":120,"IsUse":true}],"TotalCount":2,"BeatCount":0}
+
+            callback && callback(result);
+        },
+        signup: function(score, callback) {
+
+            var result = {
+                Status: { TotalRemainCount: 1, TodayRemainCount: 2},
+                Rank: [{No: 1, Name: 'wsw', MobilePhone: '15659973698', Point: 100},
+                {No: 2, Name: 'wsw', MobilePhone: '15659973698', Point: 100}],
+                MyInfo: {No: 1, Name: 'wsw', MobilePhone: '15659973698', Point: 2, IsUse: false}
+            }
+            
+            callback && callback(result);
+        },
+        use: function(id, callback) {
+            callback && callback();
+        }
+    };
+
+    var config = {
+        code: 11,
+        countSecond: 10,
+        onClickPoint: 1,
+        maxPoint: 100
+    }
+
+    window.Game({ajax: ajax, config: config});
+    </script>
+</body>
+
+</html>
